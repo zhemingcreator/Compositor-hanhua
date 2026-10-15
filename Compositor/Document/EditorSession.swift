@@ -733,7 +733,7 @@ final class EditorSession {
 
     /// Nestable transaction boundary; future tools can group a complete gesture.
     func beginEdit(_ name: String) {
-        history.begin(name, document: document, selection: activeLayerID)
+        history.begin(name.localized, document: document, selection: activeLayerID)
     }
 
     func endEdit() { history.end(document: document, selection: activeLayerID) }
@@ -757,8 +757,8 @@ final class EditorSession {
         guard canEditLayers, let document else { return }
         let names = Set(document.layers.map(\.name))
         var number = 1
-        while names.contains("Layer \(number)") { number += 1 }
-        var layer = ImageLayer(name: "Layer \(number)", blankSize: document.size)
+        while names.contains(String.localizedStringWithFormat(NSLocalizedString("Layer %d", comment: ""), number)) { number += 1 }
+        var layer = ImageLayer(name: String.localizedStringWithFormat(NSLocalizedString("Layer %d", comment: ""), number), blankSize: document.size)
         layer.parentID = activeLayer?.isGroup == true ? activeLayerID : activeLayer?.parentID
         if let parent = layer.parentID { collapsedGroupIDs.remove(parent) }
         var insertion = document.layers.firstIndex { $0.id == activeLayerID }.map { $0 + 1 } ?? document.layers.count
@@ -1109,13 +1109,13 @@ final class EditorSession {
     /// every pixel's detail.
     private static func firstLayer(size: CGSize, background: CGColor?) -> ImageLayer {
         guard let background, let context = try? BrushRaster.context(width: Int(size.width), height: Int(size.height), mask: false)
-        else { return ImageLayer(name: "Layer 1", blankSize: size) }
+        else { return ImageLayer(name: String.localizedStringWithFormat(NSLocalizedString("Layer %d", comment: ""), 1), blankSize: size) }
         context.setFillColor(background)
         context.fill(CGRect(origin: .zero, size: size))
         guard let image = context.makeImage(), let thumbnail = try? PixelAdjust.thumbnail(of: image)
-        else { return ImageLayer(name: "Layer 1", blankSize: size) }
-        var layer = ImageLayer(name: "Background", blankSize: size)
-        layer.asset = ImportedImage(image: image, thumbnail: thumbnail, name: "Background")
+        else { return ImageLayer(name: String.localizedStringWithFormat(NSLocalizedString("Layer %d", comment: ""), 1), blankSize: size) }
+        var layer = ImageLayer(name: "Background".localized, blankSize: size)
+        layer.asset = ImportedImage(image: image, thumbnail: thumbnail, name: "Background".localized)
         return layer
     }
 
